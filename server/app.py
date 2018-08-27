@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 from bson.json_util import dumps
 import pprint
+import bcrypt
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
@@ -27,18 +28,21 @@ def home():
 def register():
     if not request.json:
         abort(400)
-    pprint.pprint(db['users'].insert_one({'email': request.json['email'], 'password': request.json['password'], 'name': request.json['name']}))
-    return jsonify({'success': True})
+    hashed = bcrypt.hashpw(request.json['password'].encode('utf-8'), bcrypt.gensalt())
+    user = db['users'].insert_one({'email': request.json['email'], 'password': hashed.decode('utf-8'), 'name': request.json['name']})
+    return dumps({'success': True, 'userId': user.inserted_id})
 
 # Hash the password and compare. return jwt 
 @app.route("/user/login", methods=["POST"])
 def login():
     if not request.json:
         abort(400)
-    user = db['users'].find_one({'email': request.json['email'], 'password': request.json['password']})
+    user = db['users'].find_one({'email': request.json['email']})
     if user == None:
         return abort(400)
-    return dumps(user)
+    if bcrypt.checkpw(request.json['password'].encode('utf-8'), user['password'].encode('utf-8')):
+        return dumps({'_id': user['_id'], 'name': user['name'], 'email': user['email']})
+    return abort(400)
 
 # Add items to the inventory
 @app.route("/item/add", methods=["POST"])
@@ -74,7 +78,7 @@ def is_delivery_available():
 def order_items():
     """This function executes when user clicks on the order items button. It takes data from url and updates the database."""
     data = request.json
-    service = db['shipping_services'].find_one({'pincode': data['pincode']})
+    # service = db['shipping_services'].find_one({'pincode': data['pincode']})
     # Use Machine Learning Model here
     # expected_delivery_days = model.predict()
     # db['orders'].insert_one({'item': ObjectId(data['item']), 'user': ObjectId(data['user']), 'seller': ObjectId(data['seller']),'delivery_address': data['addr'], 'shipping_service': service['service']})
