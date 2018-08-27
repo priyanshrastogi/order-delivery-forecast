@@ -51,10 +51,10 @@ def login():
     return abort(400)
 
 # Add items to the inventory
-@app.route("/item/add", methods=["POST"])
+@app.route("/items/add", methods=["POST"])
 def add_item():
     data = request.json
-    item = db['items'].insert_one({'name': data['name'], 'description': data['description'], 'image': data['image'], 'seller': ObjectId(data['seller'])})
+    item = db['items'].insert_one({'name': data['name'], 'description': data['description'], 'image': data['image'], 'price': data['price'], 'seller': ObjectId(data['seller'])})
     return jsonify({'success': True, 'itemId': str(item.inserted_id)})
 
 #Add sellers to the inventory
