@@ -1,46 +1,55 @@
-from flask import Flask
-from flask import render_template
-from flask import request
-import pymongo
+from flask import Flask, jsonify, abort, request
 from pymongo import MongoClient
+from bson import ObjectId
+from bson.json_util import dumps
+import pprint
 
-client = MongoClient()
-db = client.myHackDB            #change DB name appropriately
-order_collection = db.get_collection("order_db")        #use appropriate collection name
+client = MongoClient("mongodb://admin:password123@ds133152.mlab.com:33152/delivery-forecast")
+db = client['delivery-forecast']
 app = Flask(__name__)
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def home():
-    return 'Hello, Flask!'
+    return 'Order Delivery Information Forecast REST API.'
 
-@app.route("/order", methods=['GET', 'POST'])       #decide which method one to use
+# Register the user, todo: hash the password and save
+@app.route("/user/register", methods=["POST"])
+def register():
+    if not request.json:
+        abort(400)
+    pprint.pprint(db['users'].insert_one({'email': request.json['email'], 'password': request.json['password'], 'name': request.json['name']}))
+    return jsonify({'success': True})
+
+# Hash the password and compare. return jwt 
+@app.route("/user/login", methods=["POST"])
+def login():
+    if not request.json:
+        abort(400)
+    user = db['users'].find_one({'email': request.json['email'], 'password': request.json['password']})
+    if user == None:
+        return abort(401)
+    return dumps(user)
+
+# Add items to the inventory
+@app.route("/item/add", methods=["POST"])
+def add_item():
+    pass
+
+@app.route("/order", methods=['POST'])
 def order_items():
     """This function executes when user clicks on the order items button. It takes data from url and updates the database."""
-    if request.method == "GET":
-        name = request.args.get("name")
-        order_id = request.args.get("id")
-        add = request.args.get("address")
-        post = {
-            "Order_id" : order_id, "Product_Name" : name, "Delivery_Address" : add
-        }
-    #more fields can be added when structure is finalised
-    data = request.get_json()
-    if request.method == "POST":     #assuming json data is received in POST
-        name = data["name"]
-        order_id = data["id"]
-        add = data["address"]
-        post = {
-            "Order_id" : order_id, "Product_Name" : name, "Delivery_Address" : add
-        }
-    post_id = order_collection.insert_one(post).inserted_id
-    return """Item      successfully ordered!       #returning simple text for now
-            Name:{}
-            Order_id: {} 
-            Address: {} 
-            System_generated_orderid: {}""".format(name, order_id, add, post_id)        
-@app.route("/view-order/<order_id>")
+    db['orders'].insert_one({'item': ObjectId(request.json['item']), 'user': ObjectId(request.json['user'])})
+    # Use Machine Learning Model here
+
+# Retrieve user's orders
+@app.route("/orders", methods=["GET"])
+def get_orders():
+    pass
+
+# Retrieve specific order details
+@app.route("/orders/<order_id>")
 def view_order(order_id):
-    return """Data returned:{}      #dB queried and text returned
-    Order_id recieved: {}""".format(order_collection.find_one({"Order_id": order_id}), order_id)
+    pass
+
 if(__name__ == '__main__'):
     app.run(debug=True)
