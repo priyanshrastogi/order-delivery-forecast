@@ -47,11 +47,19 @@ def add_item():
     item = db['items'].insert_one({'name': data['name'], 'description': data['description'], 'image': data['image'], 'seller': ObjectId(data['seller'])})
     return dumps(item)
 
+#Add sellers to the inventory
 @app.route("/sellers/add", methods=["POST"])
 def add_seller():
     data = request.json
     seller = db['sellers'].insert_one({'name': data['name'], 'address': data['address'], 'pincode': data['pincode'], 'contact': data['contact']})
     return dumps({'success': True, 'sellerId': seller.inserted_id})
+
+#Add delivery services
+@app.route("/shippingservice/add", methods=["POST"])
+def add_service():
+    data = request.json
+    service = db['shipping_service'].insert_one({'pincode': data['pincode'], 'service_name': data['service_name'], 'class': data['class']})
+    return dumps({'success': True, 'serviceId': service.inserted_id})
 
 # Check if delivery is available at given pincode
 @app.route("/services/delivery/availability/<pincode>", methods=["GET"])
