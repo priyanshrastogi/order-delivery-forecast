@@ -7,6 +7,8 @@ import bcrypt
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+import jwt
+import datetime
 
 # Connect to the database
 client = MongoClient("mongodb://admin:password123@ds133152.mlab.com:33152/delivery-forecast")
@@ -41,7 +43,9 @@ def login():
     if user == None:
         return abort(400)
     if bcrypt.checkpw(request.json['password'].encode('utf-8'), user['password'].encode('utf-8')):
-        return dumps({'_id': user['_id'], 'name': user['name'], 'email': user['email']})
+#         return dumps({'_id': user['_id'], 'name': user['name'], 'email': user['email']})
+        token = jwt.encode(dumps({'iss':user['_id'],'exp':datetime.datetime.utcnow() + datetime.timedelta(days=30)}),app.config['SECRET_KEY'])
+        return jsonify({'token':token.decode('utf-8')})
     return abort(400)
 
 # Add items to the inventory
