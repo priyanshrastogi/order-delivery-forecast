@@ -6,7 +6,7 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import reduxThunk from 'redux-thunk';
 import reducers from './reducers';
 import registerServiceWorker from './registerServiceWorker';
-
+import { LOGIN_USER } from './actions'
 import NavBar from './components/NavBar';
 import Home from './components/Home';
 import Footer from './components/Footer';
@@ -14,9 +14,16 @@ import Product from './components/Product';
 import Login from './components/Login';
 import Register from './components/Register';
 import Shop from './components/Shop';
+import Buy from './components/Buy';
 
 const createStoreWithMiddleware = applyMiddleware(reduxThunk)(createStore);
 const store = createStoreWithMiddleware(reducers);
+
+const token = localStorage.getItem('token');
+
+if(token) {
+    store.dispatch({ type: LOGIN_USER });
+}
 
 ReactDOM.render(<Provider store={store}>
     <BrowserRouter>
@@ -27,7 +34,8 @@ ReactDOM.render(<Provider store={store}>
                 <Route path='/login' component={Login}/>
                 <Route path='/register' component={Register}/>
                 <Route path='/shop' component={Shop}/>
-                <Route path='/product/:id' component={Product}/>
+                <Route exact path='/product/:id' component={Product}/>
+                <Route exact path='/product/:id/buy' component={Buy}/>
             </Switch>
             <Footer/>
         </div>

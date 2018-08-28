@@ -1,8 +1,32 @@
 import React, { Component } from 'react';
 import './css/shop_styles.css';
 import './css/shop_responsive.css';
+import { connect } from 'react-redux';
+import _ from 'lodash';
+import { Link } from 'react-router-dom';
+import { fetchItems } from '../actions';
 
 class Shop extends Component {
+    
+    componentDidMount() {
+        this.props.fetchItems();
+    }
+    
+    renderItems = () => {
+        return _.map(this.props.items, item => {
+            return (
+                <div className="col-lg-3">
+                    <div class="product_border"></div>
+                    <div class="product_image"><img src={item.image} alt=""/></div>
+                    <div class="text-center">
+                        <div class="product_price"></div>
+                        <div class="product_name"><div><Link to={`/product/${item._id}`} tabindex="0">{item.name}</Link></div></div>
+                    </div>
+                </div>
+            )
+        })
+    }
+
     render() {
         return (
             <div>
@@ -34,66 +58,21 @@ class Shop extends Component {
                             </div>
 
                             <div className="col-lg-9">
-
+                                {Object.keys(this.props.items).length===0 ?
+                                <p>Fetching Products for you</p>
+                                :
                                 <div className="shop_content">
                                     <div className="shop_bar clearfix">
-                                        <div className="shop_product_count"><span>6</span> products found</div>
+                                        <div className="shop_product_count"><span>{Object.keys(this.props.items).length}</span> products found</div>
                                         
                                     </div>
 
                                     <div className="row">
-                                        <div className="col-lg-4">
-                                            <div class="product_border"></div>
-								            <div class="product_image d-flex flex-column align-items-center justify-content-center"><img src="images/new_5.jpg" alt=""/></div>
-								            <div class="product_content text-center">
-									            <div class="product_price">$225</div>
-									            <div class="product_name"><div><a href="#" tabindex="0">Philips BT6900A</a></div></div>
-								            </div>
-                                        </div>
-                                        <div className="col-lg-4">
-                                        <div class="product_border"></div>
-								            <div class="product_image d-flex flex-column align-items-center justify-content-center"><img src="images/new_5.jpg" alt=""/></div>
-								            <div class="product_content text-center">
-									            <div class="product_price">$225</div>
-									            <div class="product_name"><div><a href="#" tabindex="0">Philips BT6900A</a></div></div>
-								            </div>
-                                        </div>
-                                        <div className="col-lg-4">
-                                        <div class="product_border"></div>
-								            <div class="product_image d-flex flex-column align-items-center justify-content-center"><img src="images/new_5.jpg" alt=""/></div>
-								            <div class="product_content text-center">
-									            <div class="product_price">$225</div>
-									            <div class="product_name"><div><a href="#" tabindex="0">Philips BT6900A</a></div></div>
-								            </div>
-                                        </div>
-                                        <div className="col-lg-4">
-                                        <div class="product_border"></div>
-								            <div class="product_image d-flex flex-column align-items-center justify-content-center"><img src="images/new_5.jpg" alt=""/></div>
-								            <div class="product_content text-center">
-									            <div class="product_price">$225</div>
-									            <div class="product_name"><div><a href="#" tabindex="0">Philips BT6900A</a></div></div>
-								            </div>
-                                        </div>
-                                        <div className="col-lg-4">
-                                        <div class="product_border"></div>
-								            <div class="product_image d-flex flex-column align-items-center justify-content-center"><img src="images/new_5.jpg" alt=""/></div>
-								            <div class="product_content text-center">
-									            <div class="product_price">$225</div>
-									            <div class="product_name"><div><a href="#" tabindex="0">Philips BT6900A</a></div></div>
-								            </div>
-                                        </div>
-                                        <div className="col-lg-4">
-                                        <div class="product_border"></div>
-								            <div class="product_image d-flex flex-column align-items-center justify-content-center"><img src="images/new_5.jpg" alt=""/></div>
-								            <div class="product_content text-center">
-									            <div class="product_price">$225</div>
-									            <div class="product_name"><div><a href="#" tabindex="0">Philips BT6900A</a></div></div>
-								            </div>
-                                        </div>
+                                        {this.renderItems()}
                                     </div>
 
                                 </div>
-
+                                }
                             </div>
                         </div>
                     </div>
@@ -103,4 +82,8 @@ class Shop extends Component {
     }
 }
 
-export default Shop;
+function mapStateToProps(state) {
+    return { items: state.items };
+}
+
+export default connect(mapStateToProps, { fetchItems })(Shop);

@@ -1,7 +1,14 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { logoutUser } from '../actions';
 
 class NavBar extends Component {
+    
+    logout = () => {
+        this.props.logoutUser();
+    }
+    
     render() {
         return (
             <header className="header">
@@ -13,24 +20,25 @@ class NavBar extends Component {
                                 <div className="top_bar_contact_item"><div className="top_bar_icon"><img src="images/phone.png" alt=""/></div>+91 9412055046</div>
                                 <div className="top_bar_contact_item"><div className="top_bar_icon"><img src="images/mail.png" alt=""/></div><a href="mailto:ab823@snu.edu.in">Support</a></div>
                                 <div className="top_bar_content ml-auto">
+                                    {this.props.auth.authenticated ?
                                     <div className="top_bar_menu">
-                                        <ul className="standard_dropdown top_bar_dropdown">
-                                            
+                                        <ul className="standard_dropdown top_bar_dropdown">        
                                             <li>
-                                                <a href="#">Wallet<i className="fas fa-chevron-down"></i></a>
+                                                <a href="#">{localStorage.getItem('name')}<i className="fas fa-chevron-down"></i></a>
                                                 <ul>
-                                                    <li><a href="https://paytm.com/">PayTM</a></li>
-                                                    <li><a href="https://www.phonepe.com/">Phone Pay</a></li>
-                                                    
+                                                    <li><Link to="/myorders">My Orders</Link></li>
+                                                    <li onClick={this.logout}><Link to="/">Logout</Link></li>
                                                 </ul>
                                             </li>
                                         </ul>
                                     </div>
+                                    :
                                     <div className="top_bar_user">
                                         <div className="user_icon"><img src="images/user.svg" alt=""/></div>
-                                        <div><a href="signup.html">Register</a></div>
-                                        <div><a href="#">Sign in</a></div>
+                                        <div><Link to="/register">Register</Link></div>
+                                        <div><Link to="/login">Login</Link></div>
                                     </div>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -43,7 +51,7 @@ class NavBar extends Component {
 
                             <div className="col-lg-2 col-sm-3 col-3 order-1">
                                 <div className="logo_container">
-                                    <div className="logo"><a href="index.html">TechJuice</a></div>
+                                    <div className="logo"><Link to="/">TechJuice</Link></div>
                                 </div>
                             </div>
 
@@ -76,13 +84,13 @@ class NavBar extends Component {
 
                             <div className="col-lg-4 col-9 order-lg-3 order-2 text-lg-left text-right">
                                 <div className="wishlist_cart d-flex flex-row align-items-center justify-content-end">
-                                    <div className="wishlist d-flex flex-row align-items-center justify-content-end">
+                                    {/*<div className="wishlist d-flex flex-row align-items-center justify-content-end">
                                         <div className="wishlist_icon"><img src="images/heart.png" alt=""/></div>
                                         <div className="wishlist_content">
                                             <div className="wishlist_text"><a href="#">Wishlist</a></div>
                                             <div className="wishlist_count">0</div>
                                         </div>
-                                    </div>
+                                    </div>*/}
 
                                     <div className="cart">
                                         <div className="cart_container d-flex flex-row align-items-center justify-content-end">
@@ -172,7 +180,6 @@ class NavBar extends Component {
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
@@ -267,4 +274,8 @@ class NavBar extends Component {
     }
 }
 
-export default NavBar;
+function mapStateToProps(state) {
+    return { auth: state.auth };
+}
+
+export default connect(mapStateToProps, { logoutUser })(NavBar);

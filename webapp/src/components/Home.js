@@ -1,6 +1,7 @@
 import React from 'react';
 import './css/main_styles.css';
 import './css/responsive.css';
+import { Link } from 'react-router-dom';
 
 export default () => {
     return (
@@ -15,7 +16,7 @@ export default () => {
                                 <div className="banner_price"><span></span></div><br/><br/><br/><br/><br/><br/><br/><br/>
                                 <div className="banner_product_name">The New Alienware</div>
                                 <h1 className="banner_text">Built for the Ultimate Champions</h1>
-                                <div className="button banner_button"><a href="https://www.amazon.in/www.amazon.in/b?ie=UTF8&node=14848487031&tag=googinkenshoo-21&ascsubtag=b9af2fbf-bd9a-4653-aeb9-1cfe5527ff81">Shop Now</a></div>
+                                <div className="button banner_button"><Link to="product/5b851a9429f0f33ff0de91df">Shop Now</Link></div>
                             </div>
                         </div>
                     </div>
