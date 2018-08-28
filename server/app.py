@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, abort, request
+from flask_cors import CORS
 from pymongo import MongoClient
 from bson import ObjectId
 from bson.json_util import dumps
@@ -20,6 +21,8 @@ model = LinearRegression()
 model.fit(df[['dispatching_time','distance','courier_service','origin_city','target_city','festive_season']],df['delivery_time'])
 
 app = Flask(__name__)
+
+CORS(app, resources={r"*": {"origins": "*"}})
 
 @app.route("/", methods=["GET"])
 def home():
@@ -43,12 +46,18 @@ def login():
         abort(400)
     user = db['users'].find_one({'email': request.json['email']})
     if user == None:
-        return abort(400)
+        return abort(401)
     if bcrypt.checkpw(request.json['password'].encode('utf-8'), user['password'].encode('utf-8')):
         print(str(user['_id']))
         token = jwt.encode({'uid': str(user['_id']), 'exp': datetime.datetime.utcnow() + datetime.timedelta(days=30)},'qwr48fv4df25gbt45vqer5544vre44d4v5e55vqer')
         return jsonify({'_id': str(user['_id']), 'name': user['name'], 'email': user['email'], 'token':token.decode('utf-8')})
-    return abort(400)
+    return abort(401)
+
+# Get inventory
+@app.route("/items", methods=["GET"])
+def get_items():
+    items = db['items'].find({})
+    return dumps(items)
 
 # Add items to the inventory
 @app.route("/items/add", methods=["POST"])
@@ -73,8 +82,8 @@ def add_service():
 
 # Check if delivery is available at given pincode
 @app.route("/services/delivery/availability/<pincode>", methods=["GET"])
-def is_delivery_available():
-    service = db['shipping_services'].find_one({'pincode': request.args['pincode']})
+def is_delivery_available(pincode):
+    service = db['shipping_services'].find_one({'pincode': pincode})
     if service == None:
         return jsonify({'status': False})
     return jsonify({'status': True})
