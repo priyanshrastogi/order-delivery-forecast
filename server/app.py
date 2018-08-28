@@ -68,13 +68,13 @@ def add_seller():
 @app.route("/shippingservice/add", methods=["POST"])
 def add_service():
     data = request.json
-    service = db['shipping_service'].insert_one({'pincode': data['pincode'], 'service_name': data['service_name'], 'pin_class': data['pin_class'], 'courier_class': data['courier_class']})
+    service = db['shipping_services'].insert_one({'pincode': data['pincode'], 'service_name': data['service_name'], 'pin_class': data['pin_class'], 'courier_class': data['courier_class']})
     return jsonify({'success': True, 'serviceId': str(service.inserted_id)})
 
 # Check if delivery is available at given pincode
 @app.route("/services/delivery/availability/<pincode>", methods=["GET"])
 def is_delivery_available():
-    service = db['shipping_services'].find_one({'pincoode': request.args['pincode']})
+    service = db['shipping_services'].find_one({'pincode': request.args['pincode']})
     if service == None:
         return jsonify({'status': False})
     return jsonify({'status': True})
@@ -94,7 +94,7 @@ def order_items():
     print(uid) # uid is user id. Will be used to place the order
     service = db['shipping_services'].find_one({'pincode': data['pincode']})
     # Use Machine Learning Model here
-    # expected_delivery_days = model.predict()
+    # expected_delivery_days = model.predict([[payload['dispatching_time'], payload['distance'], service, payload['origin_city'], payload['target_city'], payload['festive_season']]])
     # db['orders'].insert_one({'item': ObjectId(data['item']), 'user': ObjectId(uid), 'seller': ObjectId(data['seller']),'delivery_address': data['addr'], 'shipping_service': service['service'], 'expected_delivery_days'})
 
 # Retrieve user's orders
@@ -107,6 +107,23 @@ def get_orders():
     payload = jwt.decode(token, 'qwr48fv4df25gbt45vqer5544vre44d4v5e55vqer')
     uid = payload['uid']
     #todo: find orders by made by the user and join $item field. Hint: use mongodb aggregation pipeline, and $lookup stage.
+    db['orders'].aggregate([
+    {
+     '$lookup':
+        {
+         'from': 'items',
+         'localField': 'item',
+         'foreignField': 'name',
+         'as': 'ord'
+        }},
+    {
+     '$match':
+        {
+         'user': ObjectId(uid)
+        }}
+    ])
+    return dumps(ord)
+    
 
 # Retrieve specific order details
 @app.route("/orders/<order_id>")
