@@ -70,20 +70,20 @@ def add_item():
 @app.route("/sellers/add", methods=["POST"])
 def add_seller():
     data = request.json
-    seller = db['sellers'].insert_one({'name': data['name'], 'address': data['address'], 'pincode': data['pincode'], 'contact': data['contact']})
+    seller = db['sellers'].insert_one({'name': data['name'], 'address': data['address'], 'pincode': data['pincode'], 'contact': data['contact'], 'pin_class': data['pin_class'], 'avg_dispatch_time': data['avg_dispatch_time']})
     return jsonify({'success': True, 'sellerId': str(seller.inserted_id)})
 
 #Add delivery services
 @app.route("/shippingservice/add", methods=["POST"])
 def add_service():
     data = request.json
-    service = db['shipping_services'].insert_one({'pincode': data['pincode'], 'service_name': data['service_name'], 'pin_class': data['pin_class'], 'courier_class': data['courier_class']})
+    service = db['shipping_service'].insert_one({'pincode': data['pincode'], 'service_name': data['service_name'], 'pin_class': data['pin_class'], 'courier_class': data['courier_class']})
     return jsonify({'success': True, 'serviceId': str(service.inserted_id)})
 
 # Check if delivery is available at given pincode
 @app.route("/services/delivery/availability/<pincode>", methods=["GET"])
 def is_delivery_available(pincode):
-    service = db['shipping_services'].find_one({'pincode': pincode})
+    service = db['shipping_service'].find_one({'pincode': pincode})
     if service == None:
         return jsonify({'status': False})
     return jsonify({'status': True})
@@ -101,7 +101,8 @@ def order_items():
     payload = jwt.decode(token, 'qwr48fv4df25gbt45vqer5544vre44d4v5e55vqer')
     uid = payload['uid']
     print(uid) # uid is user id. Will be used to place the order
-    service = db['shipping_services'].find_one({'pincode': data['pincode']})
+    service = db['shipping_service'].find_one({'pincode': data['pincode']})
+    service['pin_class'], service['courier_class']
     # Use Machine Learning Model here
     # expected_delivery_days = model.predict([[payload['dispatching_time'], payload['distance'], service, payload['origin_city'], payload['target_city'], payload['festive_season']]])
     # db['orders'].insert_one({'item': ObjectId(data['item']), 'user': ObjectId(uid), 'seller': ObjectId(data['seller']),'delivery_address': data['addr'], 'shipping_service': service['service'], 'expected_delivery_days'})
