@@ -114,35 +114,45 @@ def order_items():
 
     querystring = {"origins":str(ori_lat)+","+str(ori_long),"destinations":str(des_lat)+","+str(des_long),"travelMode":"driving","key":"AojSjyxA_jmV8mIuZQOngoKJ5bgyutu94ZbdiGybIzqjnmwEei3894kQwZ25DgHd"}
 
-    headers = {
-    'Cache-Control': "no-cache",
-    'Postman-Token': "ff26ec80-ecb0-483d-9ac3-1f65c7fc775b"
-    }
-
-    response = requests.request("GET", url, headers=headers, params=querystring)
+    response = requests.request("GET", url, params=querystring)
     ans = json.loads(response.text)
     distance = ans['resourceSets'][0]['resources'][0]['results'][0]['travelDistance']
     # print(distance)
-    # return jsonify(ans)
     # Use Machine Learning Model here (2, 1390, 1, 3, 2, 0)
     expected_delivery_days = model.predict([[seller['avg_dispatch_time'], distance, service['courier_class'], seller['pin_class'], service['pin_class'], 0]])
     x = int(np.round(expected_delivery_days))
-    # return jsonify({'expected_delivery_days':x})
-    db['orders'].insert_one({'item': ObjectId(data['item']), 'user': ObjectId(uid), 'seller_id': ObjectId(data['seller']), 'seller_name': seller['name'],'delivery_address': data['address'], 'shipping_service': service['service_name'], 'expected_delivery_days':x}).inserted_id
+    itemId = db['orders'].insert_one({'item': ObjectId(data['item']), 'user': ObjectId(uid), 'seller': ObjectId(data['seller']),'delivery_address': data['address'], 'shipping_service': service['service_name'], 'expected_delivery_days':x}).inserted_id
     obj = db['orders'].aggregate([
+    {
+     '$match':
+        {
+         '_id': itemId
+        }
+    },
     {
      '$lookup':
         {
          'from': 'items',
          'localField': 'item',
          'foreignField': '_id',
-         'as': 'ord'
-        }},
+         'as': 'item'
+        }
+    },
     {
-     '$match':
+     '$lookup':
         {
-         'user': ObjectId(uid)
-        }}
+         'from': 'sellers',
+         'localField': 'seller',
+         'foreignField': '_id',
+         'as': 'seller'
+        }
+    },
+    { 
+        '$unwind': '$item'
+    },
+    { 
+        '$unwind': '$seller'
+    }
     ])
     return dumps(list(obj))
 
@@ -158,18 +168,35 @@ def get_orders():
     #todo: find orders by made by the user and join $item field. Hint: use mongodb aggregation pipeline, and $lookup stage.
     obj = db['orders'].aggregate([
     {
+     '$match':
+        {
+         'user': ObjectId(uid)
+        }
+    },
+    {
      '$lookup':
         {
          'from': 'items',
          'localField': 'item',
          'foreignField': '_id',
-         'as': 'ord'
-        }},
+         'as': 'item'
+        }
+    },
     {
-     '$match':
+     '$lookup':
         {
-         'user': ObjectId(uid)
-        }}
+         'from': 'sellers',
+         'localField': 'seller',
+         'foreignField': '_id',
+         'as': 'seller'
+        }
+    },
+    { 
+        '$unwind': '$item'
+    },
+    { 
+        '$unwind': '$seller'
+    }
     ])
     return dumps(list(obj))
     
