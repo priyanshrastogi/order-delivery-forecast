@@ -92,20 +92,57 @@ def is_delivery_available(pincode):
 @app.route("/order", methods=['POST'])
 def order_items():
     """This function executes when user clicks on the order items button. It takes data from url and updates the database."""
-    data = request.json
+    data = request.json             #address,pincode,item,seller
     try:
         token = request.headers['Authorization']
     except KeyError:
         abort(401)
-    print(token)
+    # print(token)
     payload = jwt.decode(token, 'qwr48fv4df25gbt45vqer5544vre44d4v5e55vqer')
     uid = payload['uid']
-    print(uid) # uid is user id. Will be used to place the order
+    # print(uid) # uid is user id. Will be used to place the order
     service = db['shipping_service'].find_one({'pincode': data['pincode']})
-    service['pin_class'], service['courier_class']
-    # Use Machine Learning Model here
-    # expected_delivery_days = model.predict([[payload['dispatching_time'], payload['distance'], service, payload['origin_city'], payload['target_city'], payload['festive_season']]])
-    # db['orders'].insert_one({'item': ObjectId(data['item']), 'user': ObjectId(uid), 'seller': ObjectId(data['seller']),'delivery_address': data['addr'], 'shipping_service': service['service'], 'expected_delivery_days'})
+    des_lat = service['location']['lat']
+    des_long = service['location']['long']
+    seller = db['sellers'].find_one({"_id" : ObjectId(data['seller'])})
+    ori_lat = seller['location']['lat']
+    ori_long = seller['location']['long']
+    # return jsonify({"destination_lat" : des_lat, "destination_long" : des_long, "origin_lat" : ori_lat, "origin_long" : ori_long})
+    url = "https://dev.virtualearth.net/REST/v1/Routes/DistanceMatrix"
+
+    querystring = {"origins":str(ori_lat)+","+str(ori_long),"destinations":str(des_lat)+","+str(des_long),"travelMode":"driving","key":"AojSjyxA_jmV8mIuZQOngoKJ5bgyutu94ZbdiGybIzqjnmwEei3894kQwZ25DgHd"}
+
+    headers = {
+    'Cache-Control': "no-cache",
+    'Postman-Token': "ff26ec80-ecb0-483d-9ac3-1f65c7fc775b"
+    }
+
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    ans = json.loads(response.text)
+    distance = ans['resourceSets'][0]['resources'][0]['results'][0]['travelDistance']
+    # print(distance)
+    # return jsonify(ans)
+    # Use Machine Learning Model here (2, 1390, 1, 3, 2, 0)
+    expected_delivery_days = model.predict([[seller['avg_dispatch_time'], distance, service['courier_class'], seller['pin_class'], service['pin_class'], 0]])
+    x = int(np.round(expected_delivery_days))
+    # return jsonify({'expected_delivery_days':x})
+    db['orders'].insert_one({'item': ObjectId(data['item']), 'user': ObjectId(uid), 'seller_id': ObjectId(data['seller']), 'seller_name': seller['name'],'delivery_address': data['address'], 'shipping_service': service['service_name'], 'expected_delivery_days':x}).inserted_id
+    obj = db['orders'].aggregate([
+    {
+     '$lookup':
+        {
+         'from': 'items',
+         'localField': 'item',
+         'foreignField': '_id',
+         'as': 'ord'
+        }},
+    {
+     '$match':
+        {
+         'user': ObjectId(uid)
+        }}
+    ])
+    return dumps(list(obj))
 
 # Retrieve user's orders
 @app.route("/orders", methods=["GET"])
@@ -117,13 +154,13 @@ def get_orders():
     payload = jwt.decode(token, 'qwr48fv4df25gbt45vqer5544vre44d4v5e55vqer')
     uid = payload['uid']
     #todo: find orders by made by the user and join $item field. Hint: use mongodb aggregation pipeline, and $lookup stage.
-    db['orders'].aggregate([
+    obj = db['orders'].aggregate([
     {
      '$lookup':
         {
          'from': 'items',
          'localField': 'item',
-         'foreignField': 'name',
+         'foreignField': '_id',
          'as': 'ord'
         }},
     {
@@ -132,7 +169,7 @@ def get_orders():
          'user': ObjectId(uid)
         }}
     ])
-    return dumps(ord)
+    return dumps(list(obj))
     
 
 # Retrieve specific order details
