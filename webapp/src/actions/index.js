@@ -2,6 +2,7 @@ import axios from 'axios';
 
 export const LOGIN_USER = 'login_user';
 export const LOGOUT_USER = 'logout_user';
+export const AUTH_ERROR = 'auth_error';
 export const FETCH_ITEMS = 'fetch_items';
 export const ORDER_ITEM = 'order_item';
 export const FETCH_ORDERS = 'fetch_orders';
@@ -23,6 +24,14 @@ export const loginUser = (email, password, callback) => dispatch => {
         dispatch({type: LOGIN_USER});
         callback();
     })
+    .catch(error => {
+        if(error.request)
+            dispatch({type: AUTH_ERROR, payload: 'You are not connected to the Internet'});
+        else if(error.response.status === 401)
+            dispatch({type: AUTH_ERROR, payload: 'Invalid Email and Password Combination'});
+        else if(error.response.status === 500)
+            dispatch({type: AUTH_ERROR, payload: 'Internal Server Error'});
+    });
 }
 
 export const registerUser = (name, email, password, callback) => dispatch => {
@@ -43,6 +52,12 @@ export const registerUser = (name, email, password, callback) => dispatch => {
         dispatch({type: LOGIN_USER});
         callback();
     })
+    .catch(error => {
+        if(error.request)
+            dispatch({type: AUTH_ERROR, payload: 'You are not connected to the Internet'});
+        else if(error.response.status === 500)
+            dispatch({type: AUTH_ERROR, payload: 'Internal Server Error'});
+    });
 }
 
 export const logoutUser = () => dispatch => {
@@ -59,6 +74,9 @@ export const fetchItems = () => dispatch => {
         console.log(response.data);
         dispatch({type: FETCH_ITEMS, payload: response.data});
     })
+    .catch(error => {
+             
+    })
 }
 
 export const orderItem = (address, pincode, item, seller) => dispatch => {
@@ -73,6 +91,6 @@ export const orderItem = (address, pincode, item, seller) => dispatch => {
         }
     })
     .then(response => {
-
+        
     })
 }

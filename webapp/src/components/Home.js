@@ -31,7 +31,7 @@ export default () => {
                             <div className="char_item d-flex flex-row align-items-center justify-content-start">
                                 <div className="char_icon"><img src="images/char_1.png" alt=""/></div>
                                 <div className="char_content">
-                                    <div className="char_title">One-Day Delivery</div>
+                                    <div className="char_title">Fast Delivery</div>
                                     <div className="char_subtitle">Across India</div>
                                 </div>
                             </div>

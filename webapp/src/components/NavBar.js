@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { logoutUser } from '../actions';
+import logo from '../dell_logo.png';
 
 class NavBar extends Component {
     
@@ -51,7 +52,7 @@ class NavBar extends Component {
 
                             <div className="col-lg-2 col-sm-3 col-3 order-1">
                                 <div className="logo_container">
-                                    <div className="logo"><Link to="/">TechJuice</Link></div>
+                                    <div className="logo"><Link to="/"><img src={logo} height={60}/></Link></div>
                                 </div>
                             </div>
 

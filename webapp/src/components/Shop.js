@@ -16,11 +16,11 @@ class Shop extends Component {
         return _.map(this.props.items, item => {
             return (
                 <div className="col-lg-3">
-                    <div class="product_border"></div>
-                    <div class="product_image"><img src={item.image} alt=""/></div>
-                    <div class="text-center">
-                        <div class="product_price"></div>
-                        <div class="product_name"><div><Link to={`/product/${item._id}`} tabindex="0">{item.name}</Link></div></div>
+                    <div className="product_border"></div>
+                    <div className="product_image"><img src={item.image} alt=""/></div>
+                    <div className="text-center">
+                        <div className="product_price"></div>
+                        <div className="product_name"><div><Link to={`/product/${item._id}`} tabindex="0">{item.name}</Link></div></div>
                     </div>
                 </div>
             )

@@ -15,6 +15,8 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Shop from './components/Shop';
 import Buy from './components/Buy';
+import Orders from './components/Orders';
+import OrderDetails from './components/OrderDetails';
 
 const createStoreWithMiddleware = applyMiddleware(reduxThunk)(createStore);
 const store = createStoreWithMiddleware(reducers);
@@ -36,6 +38,8 @@ ReactDOM.render(<Provider store={store}>
                 <Route path='/shop' component={Shop}/>
                 <Route exact path='/product/:id' component={Product}/>
                 <Route exact path='/product/:id/buy' component={Buy}/>
+                <Route exact path='/orders' component={Orders}/>
+                <Route exact path='/orders/:id' component={OrderDetails}/>
             </Switch>
             <Footer/>
         </div>

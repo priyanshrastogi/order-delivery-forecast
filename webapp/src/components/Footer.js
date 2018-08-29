@@ -1,4 +1,5 @@
 import React from 'react';
+import logo from '../dell_logo.png';
 
 export default () => {
     return (
@@ -11,13 +12,13 @@ export default () => {
                         <div className="col-lg-3 footer_col">
                             <div className="footer_column footer_contact">
                                 <div className="logo_container">
-                                    <div className="logo"><a href="#">TechJuice</a></div>
+                                    <div className="logo"><img src={logo} height={60}/></div>
                                 </div>
                                 <div className="footer_title">Got Question? Call Us 24/7</div>
                                 <div className="footer_phone">+91 9412055046</div>
                                 <div className="footer_contact_text">
-                                    <p>Paschim Vihar</p>
-                                    <p>New Delhi</p>
+                                    <p>Bangalore</p>
+                                    <p>India</p>
                                 </div>
                                 <div className="footer_social">
                                     <ul>
