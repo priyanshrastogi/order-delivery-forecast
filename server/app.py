@@ -12,6 +12,9 @@ import jwt
 import datetime
 import requests
 import json
+# from flask_mail import Mail, Message
+import sendgrid
+from sendgrid.helpers.mail import *
 
 # Connect to the database
 client = MongoClient("mongodb://admin:password123@ds133152.mlab.com:33152/delivery-forecast")
@@ -23,6 +26,16 @@ model = LinearRegression()
 model.fit(df[['dispatching_time','distance','courier_service','origin_city','target_city','festive_season','weather_class']],df['delivery_time'])
 
 app = Flask(__name__)
+
+# Flask-Mail configuration
+app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'dellsacredcode'
+app.config['MAIL_PASSWORD'] = 'dellhackathon123'
+
+# Initialize extensions
+mail = Mail(app)
 
 CORS(app, resources={r"*": {"origins": "*"}})
 
@@ -112,7 +125,7 @@ def order_items():
     # return jsonify({"destination_lat" : des_lat, "destination_long" : des_long, "origin_lat" : ori_lat, "origin_long" : ori_long})
     url = "https://dev.virtualearth.net/REST/v1/Routes/DistanceMatrix"
 
-    querystring = {"origins":str(ori_lat)+","+str(ori_long),"destinations":str(des_lat)+","+str(des_long),"travelMode":"driving","key":"AojSjyxA_jmV8mIuZQOngoKJ5bgyutu94ZbdiGybIzqjnmwEei3894kQwZ25DgHd"}
+    querystring = {"origins":str(ori_lat)+","+str(ori_long),"destinations":str(des_lat)+","+str(des_long),"travelMode":"driving","key":"AqRwlolrgbr4n4YmVny1hC_fLXM2kNnS_qzCjz1-DF1-r5zh7cmHshPrNo4t6M0i"}
 
     response = requests.request("GET", url, params=querystring)
     ans = json.loads(response.text)
@@ -188,6 +201,12 @@ def order_items():
         '$unwind': '$seller'
     }
     ])
+    
+    item_name = db['items'].find_one({'_id':ObjectId(data['item'])})
+    user = db['users'].find_one({'_id':ObjectId(uid)})
+    order = db['orders'].find_one({'_id':itemId})
+    
+    send_email(item_name['name'],order['expected_delivery_by'],user['email'],user['name'])
     return dumps(list(obj))
 
 # Retrieve user's orders
@@ -239,6 +258,18 @@ def get_orders():
 @app.route("/orders/<order_id>")
 def view_order(order_id):
     pass
+
+def send_email(item_name,expected_days,user_email,user_name):
+    sg = sendgrid.SendGridAPIClient(apikey='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')
+    from_email = Email("dellsacredcode@gmail.com")
+    to_email = Email(user_email)
+    subject = "We have received your order"
+    content = Content("text/html", "Hello {},\n We have received your order of {} and will be delivered to you on {} \n Thank you for shopping with Dell".format(user_name,item_name,expected_days))
+    mail = Mail(from_email, subject, to_email, content)
+    response = sg.client.mail.send.post(request_body=mail.get())
+    print(response.status_code)
+    print(response.body)
+    print(response.headers)
 
 if(__name__ == '__main__'):
     app.run(debug=True)
