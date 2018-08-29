@@ -121,7 +121,7 @@ def order_items():
     # Use Machine Learning Model here (2, 1390, 1, 3, 2, 0)
     expected_delivery_days = model.predict([[seller['avg_dispatch_time'], distance, service['courier_class'], seller['pin_class'], service['pin_class'], 0]])
     x = int(np.round(expected_delivery_days))
-    itemId = db['orders'].insert_one({'item': ObjectId(data['item']), 'user': ObjectId(uid), 'seller': ObjectId(data['seller']),'delivery_address': data['address'], 'shipping_service': service['service_name'], 'expected_delivery_days':x}).inserted_id
+    itemId = db['orders'].insert_one({'item': ObjectId(data['item']), 'user': ObjectId(uid), 'seller': ObjectId(data['seller']),'delivery_address': data['address'], 'shipping_service': service['service_name'], 'ordered_on': datetime.datetime.utcnow(), 'expected_delivery_days':x}).inserted_id
     obj = db['orders'].aggregate([
     {
      '$match':
