@@ -10,6 +10,8 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 import jwt
 import datetime
+import requests
+import json
 
 # Connect to the database
 client = MongoClient("mongodb://admin:password123@ds133152.mlab.com:33152/delivery-forecast")
