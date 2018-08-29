@@ -75,7 +75,7 @@ class Buy extends Component {
                                 <div className="newsletter_title text-center" style={{marginBottom: 50}}>Enter Delivery Address</div>
                                 <input type="text" className="newsletter_input" required="required" placeholder="Name" onChange={(e) => this.setState({name: e.target.value})}/><br/>
                                 <input type="text" className="newsletter_input" required="required" placeholder="Delivery Address" onChange={(e) => this.setState({address: e.target.value})}/><br/>
-                                <input type="text" className="newsletter_input" required="required" placeholder="Pincode" onChange={(e) => this.setState({pincode: e.target.value})}/><br/>
+                                <input type="number" className="newsletter_input" required="required" placeholder="Pincode" onChange={(e) => this.setState({pincode: e.target.value})}/><br/>
                                 <div className="cart_buttons">
                                     <button type="submit" className="button cart_button_checkout">Place Order and Pay</button>
                                 </div>

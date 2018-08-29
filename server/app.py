@@ -169,7 +169,7 @@ def order_items():
     expected_delivery_days = model.predict([[seller['avg_dispatch_time'], distance, service['courier_class'], seller['pin_class'], service['pin_class'], 0, weather_class]])
     x = int(np.round(expected_delivery_days))
     itemId = db['orders'].insert_one({'item': ObjectId(data['item']), 'user': ObjectId(uid), 'seller': ObjectId(data['seller']),'delivery_address': data['address'], 'shipping_service': service['service_name'], 'ordered_on': datetime.datetime.utcnow(), 'expected_delivery_by': datetime.datetime.utcnow()+datetime.timedelta(days=x)}).inserted_id
-    obj = db['orders'].aggregate([
+    res = db['orders'].aggregate([
     {
      '$match':
         {
@@ -202,12 +202,13 @@ def order_items():
     }
     ])
     
-    item_name = db['items'].find_one({'_id':ObjectId(data['item'])})
-    user = db['users'].find_one({'_id':ObjectId(uid)})
-    order = db['orders'].find_one({'_id':itemId})
+    obj = list(res)
+
+    user = db['users'].find_one({'_id': ObjectId(uid)})
+    order = obj[0]
     
-    send_email(item_name['name'],order['expected_delivery_by'],user['email'],user['name'])
-    return dumps(list(obj))
+    send_email(order['item']['name'], order['expected_delivery_by'], user['email'], user['name'])
+    return dumps(obj)
 
 # Retrieve user's orders
 @app.route("/orders", methods=["GET"])
@@ -264,7 +265,7 @@ def send_email(item_name,expected_days,user_email,user_name):
     from_email = Email("dellsacredcode@gmail.com")
     to_email = Email(user_email)
     subject = "We have received your order"
-    content = Content("text/html", "Hello {},\n We have received your order of {} and will be delivered to you on {} \n Thank you for shopping with Dell".format(user_name,item_name,expected_days))
+    content = Content("text/html", "Hello {},\n\n We have received your order of {} and will be delivered to you by {} \n\n Thank you for shopping with Dell".format(user_name,item_name,expected_days))
     mail = Mail(from_email, subject, to_email, content)
     response = sg.client.mail.send.post(request_body=mail.get())
     print(response.status_code)

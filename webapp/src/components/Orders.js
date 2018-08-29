@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import './css/cart_styles.css';
 import './css/cart_responsive.css';
@@ -9,7 +9,7 @@ import _ from 'lodash';
 class Orders extends Component {
 
     state = {
-        limit: 365
+        limit: 365,
     }
 
     componentDidMount() {
@@ -75,32 +75,39 @@ class Orders extends Component {
     }
 
     render() {
-        return (
-            <div className="cart_section">
-                <div className="container">
-                    {this.props.orders ?
-                    <div className="row">
-                        <div className="col-lg-10 offset-lg-1">
-                            <div className="cart_container">
-                                <div className="d-flex justify-content-between">
-                                    <div className="cart_title">My Orders</div>
-                                    <div><input type="email" className="newsletter_input" placeholder="Filter by delivery days" onChange={this.handleChange}/></div>
+        if(this.props.auth.authenticated) {
+            return (
+                <div className="cart_section">
+                    <div className="container">
+                        {this.props.orders ?
+                        <div className="row">
+                            <div className="col-lg-10 offset-lg-1">
+                                <div className="cart_container">
+                                    <div className="d-flex justify-content-between">
+                                        <div className="cart_title">My Orders</div>
+                                        <div><input type="email" className="newsletter_input" placeholder="Filter by delivery days" onChange={this.handleChange}/></div>
+                                    </div>
+                                    {this.renderOrders(this.state.limit)}
                                 </div>
-                                {this.renderOrders(this.state.limit)}
                             </div>
                         </div>
+                        :
+                        <div>Fetching your orders</div>
+                        }
                     </div>
-                    :
-                    <div>Fetching your orders</div>
-                    }
                 </div>
-            </div>
-        )
+            )
+        }
+        else {
+            return (
+                <Redirect to="/login"/>
+            )
+        }
     }
 }
 
 function mapStateToProps(state) {
-    return {orders: state.orders}
+    return {orders: state.orders, auth: state.auth};
 }
 
 export default connect(mapStateToProps, { fetchOrders })(Orders);
