@@ -27,7 +27,7 @@ class NavBar extends Component {
                                             <li>
                                                 <a href="#">{localStorage.getItem('name')}<i className="fas fa-chevron-down"></i></a>
                                                 <ul>
-                                                    <li><Link to="/myorders">My Orders</Link></li>
+                                                    <li><Link to="/orders">My Orders</Link></li>
                                                     <li onClick={this.logout}><Link to="/">Logout</Link></li>
                                                 </ul>
                                             </li>
@@ -52,7 +52,7 @@ class NavBar extends Component {
 
                             <div className="col-lg-2 col-sm-3 col-3 order-1">
                                 <div className="logo_container">
-                                    <div className="logo"><Link to="/"><img src={logo} height={60}/></Link></div>
+                                    <div className="logo"><Link to="/"><img src={logo} height={75}/></Link></div>
                                 </div>
                             </div>
 

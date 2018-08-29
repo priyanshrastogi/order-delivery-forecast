@@ -18,9 +18,9 @@ client = MongoClient("mongodb://admin:password123@ds133152.mlab.com:33152/delive
 db = client['delivery-forecast']
 
 # Load the training data and train the Linear Regression Model
-df = pd.read_csv('data.csv')
+df = pd.read_csv('data_2.csv')
 model = LinearRegression()
-model.fit(df[['dispatching_time','distance','courier_service','origin_city','target_city','festive_season']],df['delivery_time'])
+model.fit(df[['dispatching_time','distance','courier_service','origin_city','target_city','festive_season','weather_class']],df['delivery_time'])
 
 app = Flask(__name__)
 
@@ -119,7 +119,41 @@ def order_items():
     distance = ans['resourceSets'][0]['resources'][0]['results'][0]['travelDistance']
     # print(distance)
     # Use Machine Learning Model here (2, 1390, 1, 3, 2, 0)
-    expected_delivery_days = model.predict([[seller['avg_dispatch_time'], distance, service['courier_class'], seller['pin_class'], service['pin_class'], 0]])
+    url1 = "http://postalpincode.in/api/pincode/"+data['pincode']
+    response = requests.request("GET", url1)
+
+    city_data = json.loads(response.text)
+    city = city_data['PostOffice'][0]['Circle']
+
+    #get city key using city name
+    url2 = "http://dataservice.accuweather.com/locations/v1/cities/search"
+
+    querystring = {"apikey":"0CYlH4cOgqCaTEWmUqYfxF5ffPKGzP32","q":city,"details":"true%20HTTP/1.1"}
+
+    response = requests.request("GET", url2, params=querystring)
+
+    key_data = json.loads(response.text)
+    key = key_data[0]["Key"]
+    # return jsonify({'key':key})
+
+    #get city weather using city key
+    url3 = "http://dataservice.accuweather.com/forecasts/v1/daily/5day/"+key
+
+    querystring = {"apikey":"0CYlH4cOgqCaTEWmUqYfxF5ffPKGzP32"}
+
+    response = requests.request("GET", url3, params=querystring)
+
+    weather_data = json.loads(response.text)
+    weather = weather_data["Headline"]["Category"]
+    
+    weather_class_dict = {'sunny': 3, 'rainy': 3, 'thunderstrom': 2, 'fog': 2, 'showers': 3, 'snow': 2}
+    weather_class = 3
+    try:
+        weather_class = weather_class_dict[weather]
+    except:
+        weather_class = 3
+    
+    expected_delivery_days = model.predict([[seller['avg_dispatch_time'], distance, service['courier_class'], seller['pin_class'], service['pin_class'], 0, weather_class]])
     x = int(np.round(expected_delivery_days))
     itemId = db['orders'].insert_one({'item': ObjectId(data['item']), 'user': ObjectId(uid), 'seller': ObjectId(data['seller']),'delivery_address': data['address'], 'shipping_service': service['service_name'], 'ordered_on': datetime.datetime.utcnow(), 'expected_delivery_by': datetime.datetime.utcnow()+datetime.timedelta(days=x)}).inserted_id
     obj = db['orders'].aggregate([

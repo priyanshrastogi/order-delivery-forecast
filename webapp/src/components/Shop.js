@@ -15,7 +15,7 @@ class Shop extends Component {
     renderItems = () => {
         return _.map(this.props.items, item => {
             return (
-                <div className="col-lg-3">
+                <div className="col-lg-3" key={item._id}>
                     <div className="product_border"></div>
                     <div className="product_image"><img src={item.image} alt=""/></div>
                     <div className="text-center">

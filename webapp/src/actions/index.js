@@ -75,11 +75,11 @@ export const fetchItems = () => dispatch => {
         dispatch({type: FETCH_ITEMS, payload: response.data});
     })
     .catch(error => {
-             
+
     })
 }
 
-export const orderItem = (address, pincode, item, seller) => dispatch => {
+export const orderItem = (address, pincode, item, seller, callback) => dispatch => {
     axios.post('http://localhost:5000/order', {
         address,
         pincode,
@@ -91,6 +91,33 @@ export const orderItem = (address, pincode, item, seller) => dispatch => {
         }
     })
     .then(response => {
-        
+        for(let i=0; i<response.data.length; i++) {
+            response.data[i]._id = response.data[i]._id['$oid']
+        }
+        dispatch({type: FETCH_ORDERS, payload: response.data});
+        callback(response.data[0]._id);
+    })
+}
+
+export const fetchOrders = () => dispatch => {
+    axios.get('http://localhost:5000/orders', {
+        headers: {
+            'Authorization': localStorage.getItem('token')
+        }
+    })
+    .then(response => {
+        for(let i=0; i<response.data.length; i++) {
+            response.data[i]._id = response.data[i]._id['$oid']
+        }
+        response.data.sort((a,b) => {
+            console.log(b.expected_delivery_by.$date);
+            return new Date(a.expected_delivery_by.$date) - new Date(b.expected_delivery_by.$date);
+          });
+          
+        console.log(response.data);
+        dispatch({type: FETCH_ORDERS, payload: response.data});
+    })
+    .catch(error => {
+
     })
 }

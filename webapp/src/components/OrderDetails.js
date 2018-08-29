@@ -3,70 +3,77 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import './css/cart_styles.css';
 import './css/cart_responsive.css';
+import { fetchOrders } from '../actions';
 
 class Orders extends Component {
 
+    componentDidMount() {
+        if(!this.props.order)
+            this.props.fetchOrders();
+    }
+
+    renderDate = (date) => {
+        const strs = new Date(date).toString().split(' ')
+        return `${strs[2]} ${strs[1]} ${strs[3]}`
+    }
+
     render() {
+        console.log("I am executed");
+        const { order } = this.props;
         return (
-            <div className="cart_section">
+            <div className="single_product">
                 <div className="container">
+                    {this.props.order ?
                     <div className="row">
-                        <div className="col-lg-10 offset-lg-1">
-                            <div className="cart_container">
-                                <div className="cart_title">My Orders</div>
-                                <div className="cart_items">
-                                    <ul className="cart_list">
-                                        <li className="cart_item clearfix">
-                                            <div className="cart_item_image"><img src="https://images-na.ssl-images-amazon.com/images/I/41QNd87-PJL.jpg" alt=""/></div>
-                                            <div className="cart_item_info d-flex flex-md-row flex-column justify-content-between">
-                                                <div className="cart_item_name cart_info_col">
-                                                    <div className="cart_item_title">Name</div>
-                                                    <div className="cart_item_text">Dell Inspiron 15 A45DS5</div>
-                                                </div>
-                                                <div className="cart_item_price cart_info_col">
-                                                    <div className="cart_item_title">Ordered On</div>
-                                                    <div className="cart_item_text">26 Aug 2018</div>
-                                                </div>
-                                                <div className="cart_item_total cart_info_col">
-                                                    <div className="cart_item_title">Price</div>
-                                                    <div className="cart_item_text">25000</div>
-                                                </div>
-                                                <div className="cart_item_color cart_info_col">
-											        <div className="cart_item_title">Shipping Status</div>
-											        <div className="cart_item_text">Delivery in 2 days</div>
-										        </div>
-                                            </div>
-                                        </li>
-                                    </ul>
+                        <div className="col-lg-3 order-lg-2 order-1">
+                            <div className="image_selected" style={{height: 300}}><img src={order.item.image} alt=""/></div>
+                        </div>
+                        <div className="col-lg-9 order-3">
+                            <div className="product_description">
+                                <div className="product_category">Order ID: {order._id}</div>
+                                <div className="product_name">{order.item.name}</div>
+                                <div style={{marginTop: 50}}>
+                                    <div className="cart_item_title" style={{marginBottom: -35}}>Delivery Address</div>
+                                    <div className="cart_item_text">{order.delivery_address}</div>
                                 </div>
-                                <div className="cart_items">
-                                    <ul className="cart_list">
-                                        <li className="cart_item clearfix">
-                                            <div className="cart_item_image"><img src="https://images-na.ssl-images-amazon.com/images/I/41QNd87-PJL.jpg" alt=""/></div>
-                                            <div className="cart_item_info d-flex flex-md-row flex-column justify-content-between">
-                                                <div className="cart_item_name cart_info_col">
-                                                    <div className="cart_item_title">Name</div>
-                                                    <div className="cart_item_text">DELL Alienware AAW17R4-7002SLV-PUS</div>
-                                                </div>
-                                                <div className="cart_item_price cart_info_col">
-                                                    <div className="cart_item_title">Ordered On</div>
-                                                    <div className="cart_item_text">26 Aug 2018</div>
-                                                </div>
-                                                <div className="cart_item_total cart_info_col">
-                                                    <div className="cart_item_title">Price</div>
-                                                    <div className="cart_item_text">250000</div>
-                                                </div>
-                                                <div className="cart_item_color cart_info_col">
-											        <div className="cart_item_title">Shipping Status</div>
-											        <div className="cart_item_text">Delivery in 2 days</div>
-										        </div>
-                                            </div>
-                                        </li>
-                                    </ul>
+                                <div className="d-flex justify-content-between" style={{marginTop: 50}}>
+                                    <div>
+                                        <div className="cart_item_title" style={{marginBottom: -35}}>Ordered On</div>
+                                        <div className="cart_item_text">{this.renderDate(order.ordered_on.$date)}</div>
+                                    </div>
+                                    <div>
+                                        <div className="cart_item_title" style={{marginBottom: -35}}>Sold By</div>
+                                        <div className="cart_item_text">{order.seller.name}</div>
+                                    </div>
+                                    <div>
+                                        <div className="cart_item_title" style={{marginBottom: -35}}>Order Total</div>
+                                        <div className="cart_item_text">&#8377; {order.item.price}</div>
+                                    </div>
+                                </div>
+                                <div className="d-flex justify-content-between" style={{marginTop: 50}}>
+                                    <div>
+                                        <div className="cart_item_title" style={{marginBottom: -35}}>Shipping Service</div>
+                                        <div className="cart_item_text">{order.shipping_service}</div>
+                                    </div>
+                                    <div>
+                                        <div className="cart_item_title" style={{marginBottom: -35}}>Current Shipping Status</div>
+                                        <div className="cart_item_text">Not Yet Dispatched</div>
+                                    </div>
+                                    <div>
+                                        <div className="cart_item_title" style={{marginBottom: -35}}>Expected Delivery By</div>
+                                        <div className="cart_item_text">{this.renderDate(order.expected_delivery_by.$date)}</div>
+                                    </div>
+                                </div>
+                                <div className="button_container">
+                                    <Link to='#'><div className="button cart_button" style={{marginRight: 50}}>Cancel Order</div></Link>
+                                    <Link to='#'><div className="button cart_button">Track Order</div></Link>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    : 
+                    <div>Fetching the prder for you</div>
+                    }
                 </div>
             </div>
         )
@@ -74,7 +81,7 @@ class Orders extends Component {
 }
 
 function mapStateToProps(state, ownProps) {
-    return {order: state.orders[ownProps.match.params]};
+    return {order: state.orders[ownProps.match.params.id]};
 }
 
-export default connect(mapStateToProps, null)(Orders);
+export default connect(mapStateToProps, {fetchOrders})(Orders);
