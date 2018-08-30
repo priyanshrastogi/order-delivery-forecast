@@ -17,7 +17,7 @@ import sendgrid
 from sendgrid.helpers.mail import *
 
 # Connect to the database
-client = MongoClient("mongodb://admin:password123@ds133152.mlab.com:33152/delivery-forecast")
+client = MongoClient(MONGODB_URL)
 db = client['delivery-forecast']
 
 # Load the training data and train the Linear Regression Model
@@ -26,16 +26,6 @@ model = LinearRegression()
 model.fit(df[['dispatching_time','distance','courier_service','origin_city','target_city','festive_season','weather_class']],df['delivery_time'])
 
 app = Flask(__name__)
-
-# Flask-Mail configuration
-app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'dellsacredcode'
-app.config['MAIL_PASSWORD'] = 'dellhackathon123'
-
-# Initialize extensions
-mail = Mail(app)
 
 CORS(app, resources={r"*": {"origins": "*"}})
 

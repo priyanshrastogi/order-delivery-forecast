@@ -13,9 +13,10 @@ class Register extends Component {
 
     handleSubmit = (event) => {
         event.preventDefault();
-        this.props.registerUser(this.state.name, this.state.email, this.state.password, () => {
-            this.props.history.push('/');
-        })
+        if(this.state.password.length > 7)
+            this.props.registerUser(this.state.name, this.state.email, this.state.password, () => {
+                this.props.history.push('/');
+            });
     }
 
     render() {
@@ -25,6 +26,13 @@ class Register extends Component {
                     <div className="" style={{left: 0, right:0, margin: 'auto'}}>
                     <form onSubmit={this.handleSubmit} className="newsletter_form d-flex flex-column" style={{marginTop: 50, marginBottom: 100}}>
                         <div className="newsletter_title text-center" style={{marginBottom: 50}}>Register</div>
+                        {this.props.auth.error ?
+                        <div class="alert alert-danger" role="alert">
+                            {this.props.auth.errorText}
+                        </div>
+                        :
+                        null
+                        }
                         <input type="text" className="newsletter_input" required="required" placeholder="Enter your name" onChange={(e) => this.setState({name: e.target.value})}/><br/>
                         <input type="email" className="newsletter_input" required="required" placeholder="Enter your email address" onChange={(e) => this.setState({email: e.target.value})}/><br/>
                         <input type="password" className="newsletter_input" required="required" placeholder="Set a password" onChange={(e) => this.setState({password: e.target.value})}/><br/>
@@ -37,4 +45,8 @@ class Register extends Component {
     }
 }
 
-export default connect(null, { registerUser })(Register);
+function mapStateToProps(state) {
+    return {auth: state.auth};
+}
+
+export default connect(mapStateToProps, { registerUser })(Register);

@@ -26,7 +26,7 @@ export const loginUser = (email, password, callback) => dispatch => {
     })
     .catch(error => {
         if(error.request)
-            dispatch({type: AUTH_ERROR, payload: 'You are not connected to the Internet'});
+            dispatch({type: AUTH_ERROR, payload: 'Invalid Email and Password Combination'});
         else if(error.response.status === 401)
             dispatch({type: AUTH_ERROR, payload: 'Invalid Email and Password Combination'});
         else if(error.response.status === 500)
@@ -45,12 +45,17 @@ export const registerUser = (name, email, password, callback) => dispatch => {
         }
     })
     .then(response => {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('name', name);
-        localStorage.setItem('_id', response.data._id);
-        localStorage.setItem('email', email);
-        dispatch({type: LOGIN_USER});
-        callback();
+        if(response.data.success) {
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('name', name);
+            localStorage.setItem('_id', response.data._id);
+            localStorage.setItem('email', email);
+            dispatch({type: LOGIN_USER});
+            callback();
+        }
+        else {
+            dispatch({type: AUTH_ERROR, payload: 'User with this email already exists'});
+        }
     })
     .catch(error => {
         if(error.request)
